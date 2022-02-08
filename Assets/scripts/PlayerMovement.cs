@@ -31,7 +31,7 @@ public class PlayerMovement : MonoBehaviour
         while(Vector2.Distance((Vector2)transform.position, target) > 0)
         {
             transform.position = Vector3.MoveTowards(transform.position, target, _speed * Time.deltaTime);
-            _grid.PrintindOver();
+            _grid.CheckPrinting();
             yield return null;
         }
         _moveNow = false;

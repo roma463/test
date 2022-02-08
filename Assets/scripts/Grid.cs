@@ -10,15 +10,15 @@ public class Grid : MonoBehaviour
         block
     }
     [SerializeField] private Transform _wall;
-    [SerializeField] private GameObject _color;
-    [SerializeField] private moveHome _moveHome;
+    [SerializeField] private RotationHome _moveHome;
     [SerializeField] private LayerMask _blockCollision;
     [SerializeField] private PlayerMovement _playerMovement;
+    [SerializeField] private PaintOver _texture;
 
     private Vector3[,] _gridPoint;
     private cell[,] _busyPoint;
     private Vector2Int _currentPosition = Vector2Int.zero;
-    private int _lengthX, _lenghtY;
+    private int _lengthX, _lengthY;
 
     private List<Vector3> _motionVector = new List<Vector3>();
     private List<Vector2> _positionPrintingOver = new List<Vector2>();
@@ -27,22 +27,24 @@ public class Grid : MonoBehaviour
 
     private void Start()
     {
-        _lengthX = (int)_wall.localScale.x;
-        _lenghtY = (int)_wall.localScale.y;
+        _lengthX = (int)_wall.localScale.x * 10;
+        _lengthY = (int)_wall.localScale.y * 10;
 
-        _gridPoint = new Vector3[_lengthX, _lenghtY];
-        _busyPoint = new cell[_lengthX, _lenghtY];
-        for (int x = 0; x < (int)_wall.localScale.x; x++)
+        _gridPoint = new Vector3[_lengthX, _lengthY];
+        _busyPoint = new cell[_lengthX, _lengthY];
+        for (int x = 0; x < _lengthX; x++)
         {
-            for (int y = 0; y < (int)_wall.localScale.y; y++)
+            for (int y = 0; y < _lengthY; y++)
             {
-                _gridPoint[x, y] = new Vector3(x +.5f, y + .5f) + _wall.transform.position - _wall.transform.localScale / 2;
-                _gridPoint[x, y].z = -1;
+                _gridPoint[x, y] = new Vector3(x +.5f, y + .5f) + _wall.transform.position - (_wall.transform.localScale / 2 * 10);
+                _gridPoint[x, y].z = -1f;
             }
         }
 
         _playerMovement.StartPosition(StartPosition());
         _playerMovement.SetGrid(this);
+
+        _texture.OnCreateTexture(new Vector2(_lengthX, _lengthY));
 
         SetBusyPoint();
         SetGridBusy();
@@ -51,7 +53,7 @@ public class Grid : MonoBehaviour
     {
         for (int x = 0; x < _lengthX; x++)
         {
-            for (int y = 0; y < _lenghtY; y++)
+            for (int y = 0; y < _lengthY; y++)
             {
                 var c = Physics.OverlapSphere(_gridPoint[x, y], 0.1f,_blockCollision).Length;
                 if(c > 0)
@@ -76,7 +78,7 @@ public class Grid : MonoBehaviour
         {
             playerPosition = _currentPosition.y;
             offset *= (int)direction.y;
-            lenght = _lenghtY;
+            lenght = _lengthY;
         }
         if (direction.y == 0)
         {
@@ -106,17 +108,16 @@ public class Grid : MonoBehaviour
         }
         return targetPosition;
     }
-    public void PrintindOver()
+    public void CheckPrinting()
     {
         for (int i = 0; i < _motionVector.Count; i++)
         {
-            
             var lenght = Physics.OverlapSphere(_motionVector[i], .1f).Length;
             if(lenght > 0)
             {
                 _busyPoint[(int)_positionPrintingOver[i].x, (int)_positionPrintingOver[i].y] = cell.painted;
-                var color = Instantiate(_color, _motionVector[i], Quaternion.identity);
-                color.transform.parent = _wall.transform;
+                var position = new Vector2(_lengthX - 1-_positionPrintingOver[i].x, _lengthY - 1 - _positionPrintingOver[i].y);
+                _texture.PrintingOver(position);
             }
         }
     }
@@ -124,7 +125,7 @@ public class Grid : MonoBehaviour
     {
         for (int x = 0; x < _lengthX; x++)
         {
-            for (int y = 0; y < _lenghtY; y++)
+            for (int y = 0; y < _lengthY; y++)
             {
                 if(_busyPoint[x,y] != cell.block)
                 {
@@ -137,7 +138,7 @@ public class Grid : MonoBehaviour
     {
         for (int x = 0; x < _lengthX; x++)
         {
-            for (int y = 0; y < _lenghtY; y++)
+            for (int y = 0; y < _lengthY; y++)
             {
                 if(_busyPoint[x,y] == cell.unpainted)
                 {

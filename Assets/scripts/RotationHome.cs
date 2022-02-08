@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class moveHome : MonoBehaviour
+public class RotationHome : MonoBehaviour
 {
     [SerializeField] private Grid _gridOne, _gridTwo;
     [SerializeField] private PlayerMovement _playerMovement;
